@@ -10,47 +10,39 @@ import (
 var ErrInvalidString = errors.New("invalid string")
 
 func Unpack(text string) (string, error) {
-	arr := make([]string, 0)
 	var flag bool
-	for i, str := range text {
+	runeText := []rune(text)
+	var sb strings.Builder
+
+	for i, str := range runeText {
 		if unicode.IsDigit(str) && i == 0 {
 			return "", ErrInvalidString
-		}
-		if unicode.IsDigit(str) && unicode.IsDigit(rune(text[i-1])) && rune(text[i-2]) != '\\' {
+		} else if unicode.IsDigit(str) && unicode.IsDigit(runeText[i-1]) && runeText[i-2] != '\\' {
 			return "", ErrInvalidString
 		}
-		if unicode.IsSpace(str) {
-			return "", ErrInvalidString
-		}
-		if string(str) == `\` {
-			if !flag {
-				flag = true
+
+		atoi, _ := strconv.Atoi(string(str))
+		switch {
+		case string(str) == `\` && !flag:
+			flag = true
+		case unicode.IsLetter(str):
+			if i+1 < len(runeText) && !unicode.IsDigit(runeText[i+1]) {
+				sb.WriteString(string(str))
+			} else if i+1 == len(runeText) && !unicode.IsDigit(runeText[i]) {
+				sb.WriteString(string(str))
+			}
+		case !flag && unicode.IsDigit(runeText[i]):
+			if unicode.IsDigit(runeText[i-1]) || string(runeText[i-1]) == "\\" {
+				sb.WriteString(strings.Repeat(string(runeText[i-1]), atoi-1))
 			} else {
-				flag = false
+				sb.WriteString(strings.Repeat(string(runeText[i-1]), atoi))
 			}
+		case flag && unicode.IsLetter(runeText[i-1]):
+			sb.WriteString(strings.Repeat("\\"+string(runeText[i-1]), atoi))
+		default:
+			sb.WriteString(string(str))
+			flag = false
 		}
-
-		if atoi, err := strconv.Atoi(string(str)); err == nil {
-			switch {
-			case flag:
-				if unicode.IsLetter(rune(text[i-1])) {
-					arr = append(arr, strings.Repeat("\\"+string(text[i-1]), atoi))
-				} else {
-					arr = append(arr, string(str))
-				}
-				flag = false
-			default:
-				arr = arr[:len(arr)-1]
-				arr = append(arr, strings.Repeat(string(text[i-1]), atoi))
-			}
-		} else if !flag {
-			arr = append(arr, string(str))
-		}
-	}
-
-	var sb strings.Builder
-	for _, item := range arr {
-		sb.WriteString(item)
 	}
 
 	return sb.String(), nil
