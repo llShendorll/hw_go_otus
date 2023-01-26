@@ -11,9 +11,10 @@ type List struct {
 	count int
 }
 
-var reg = regexp.MustCompile(`[\s]+`)
+var reg = regexp.MustCompile(`[\s]+-|[\s,."!]+`)
 
 func Top10(text string) []string {
+	text = strings.ToLower(text)
 	res := reg.ReplaceAllString(text, string(' '))
 	words := strings.Fields(res)
 
