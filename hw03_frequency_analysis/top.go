@@ -14,7 +14,7 @@ type List struct {
 var reg = regexp.MustCompile(`[\s]+`)
 
 func Top10(text string) []string {
-	res := reg.ReplaceAllString(text, "")
+	res := reg.ReplaceAllString(text, string(' '))
 	words := strings.Fields(res)
 
 	sort.Strings(words)
