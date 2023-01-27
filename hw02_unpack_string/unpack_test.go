@@ -16,9 +16,11 @@ func TestUnpack(t *testing.T) {
 		{input: "abccd", expected: "abccd"},
 		{input: "", expected: ""},
 		{input: "aaa0b", expected: "aab"},
+		{input: "aaa1b", expected: "aaab"},
 		{input: "Приве3т", expected: "Привееет"},
+		{input: "Приве3т0", expected: "Привеее"},
 		{input: "不客3气", expected: "不客客客气"},
-		{input: `d\n5abc`, expected: `d\n\n\n\n\nabc`},
+		{input: "d\n5abc", expected: "d\n\n\n\n\nabc"},
 		// uncomment if task with asterisk completed
 		{input: `qwe\4\5`, expected: `qwe45`},
 		{input: `qwe\45`, expected: `qwe44444`},
