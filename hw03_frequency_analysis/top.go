@@ -15,8 +15,8 @@ var reg = regexp.MustCompile(`[\s]+-|[\s,."!]+`)
 
 func Top10(text string) []string {
 	text = strings.ToLower(text)
-	res := reg.ReplaceAllString(text, string(' '))
-	words := strings.Fields(res)
+	replaceText := reg.ReplaceAllString(text, string(' '))
+	words := strings.Fields(replaceText)
 	mapWords := make(map[string]int)
 
 	for _, word := range words {
@@ -39,10 +39,15 @@ func Top10(text string) []string {
 		return list[i].count > list[j].count
 	})
 
-	listSlice := make([]string, 0, 10)
+	lengthList := 10
+	if len(list) < 10 {
+		lengthList = len(list)
+	}
+
+	listSlice := make([]string, 0, lengthList)
 	for i, k := range list {
 		listSlice = append(listSlice, k.word)
-		if i == 9 || i > len(list) {
+		if i == 9 || i > lengthList {
 			break
 		}
 	}
