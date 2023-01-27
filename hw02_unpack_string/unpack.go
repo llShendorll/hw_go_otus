@@ -17,10 +17,11 @@ func Unpack(text string) (string, error) {
 	for i, str := range runeText {
 		switch {
 		case string(str) == `\` && !shielding:
+			if i == len(runeText)-1 {
+				return "", ErrInvalidString
+			}
 			shielding = true
 		case unicode.IsDigit(rune(text[0])) || (unicode.IsLetter(str) && shielding):
-			return "", ErrInvalidString
-		case runeText[len(runeText)-2] != '\\' && runeText[len(runeText)-1] == '\\':
 			return "", ErrInvalidString
 		case shielding:
 			sb.WriteString(string(str))
