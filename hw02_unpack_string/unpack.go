@@ -15,15 +15,13 @@ func Unpack(text string) (string, error) {
 	runeText := []rune(text)
 	var sb strings.Builder
 	for i, str := range runeText {
-		if unicode.IsDigit(rune(text[0])) || (runeText[len(runeText)-2] != '\\' && runeText[len(runeText)-1] == '\\') {
-			return "", ErrInvalidString
-		} else if unicode.IsLetter(str) && shielding {
-			return "", ErrInvalidString
-		}
-
 		switch {
 		case string(str) == `\` && !shielding:
 			shielding = true
+		case unicode.IsDigit(rune(text[0])) || (unicode.IsLetter(str) && shielding):
+			return "", ErrInvalidString
+		case runeText[len(runeText)-2] != '\\' && runeText[len(runeText)-1] == '\\':
+			return "", ErrInvalidString
 		case shielding:
 			sb.WriteString(string(str))
 			repeatLetter = str
