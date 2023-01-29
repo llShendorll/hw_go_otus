@@ -20,11 +20,7 @@ func Top10(text string) []string {
 	mapWords := make(map[string]int)
 
 	for _, word := range words {
-		if mapWords[word] != 0 {
-			mapWords[word]++
-		} else {
-			mapWords[word] = 1
-		}
+		mapWords[word]++
 	}
 
 	list := make([]List, 0, len(mapWords))
