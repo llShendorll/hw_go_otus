@@ -11,7 +11,7 @@ type List struct {
 	count int
 }
 
-var reg = regexp.MustCompile(`[\s]+-|[\s,."!]+`)
+var reg = regexp.MustCompile(`[\s]+-|[\s,."!:;?()'«»]+`)
 
 func Top10(text string) []string {
 	text = strings.ToLower(text)
