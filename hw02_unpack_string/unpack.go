@@ -5,6 +5,7 @@ import (
 	"strings"
 	"unicode"
 )
+
 const backslash rune = '\\'
 
 var ErrInvalidString = errors.New("invalid string")
