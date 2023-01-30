@@ -5,6 +5,7 @@ import (
 	"strings"
 	"unicode"
 )
+const backslash rune = '\\'
 
 var ErrInvalidString = errors.New("invalid string")
 
@@ -13,7 +14,6 @@ func Unpack(text string) (string, error) {
 	var next bool
 	var letter rune
 	var textResult strings.Builder
-	backslash := '\\'
 	runeText := []rune(text)
 
 	for i, r := range runeText {
