@@ -2,56 +2,53 @@ package hw02unpackstring
 
 import (
 	"errors"
-	"strconv"
 	"strings"
 	"unicode"
 )
 
+const backslash rune = '\\'
+
 var ErrInvalidString = errors.New("invalid string")
 
 func Unpack(text string) (string, error) {
-	arr := make([]string, 0)
-	var flag bool
-	for i, str := range text {
-		if unicode.IsDigit(str) && i == 0 {
-			return "", ErrInvalidString
-		}
-		if unicode.IsDigit(str) && unicode.IsDigit(rune(text[i-1])) && rune(text[i-2]) != '\\' {
-			return "", ErrInvalidString
-		}
-		if unicode.IsSpace(str) {
-			return "", ErrInvalidString
-		}
-		if string(str) == `\` {
-			if !flag {
-				flag = true
-			} else {
-				flag = false
-			}
-		}
+	var shielding bool
+	var next bool
+	var letter rune
+	var textResult strings.Builder
+	runeText := []rune(text)
 
-		if atoi, err := strconv.Atoi(string(str)); err == nil {
-			switch {
-			case flag:
-				if unicode.IsLetter(rune(text[i-1])) {
-					arr = append(arr, strings.Repeat("\\"+string(text[i-1]), atoi))
-				} else {
-					arr = append(arr, string(str))
-				}
-				flag = false
-			default:
-				arr = arr[:len(arr)-1]
-				arr = append(arr, strings.Repeat(string(text[i-1]), atoi))
+	for i, r := range runeText {
+		switch {
+		case r == backslash && !shielding:
+			if i == len(text)-1 {
+				return "", ErrInvalidString
 			}
-		} else if !flag {
-			arr = append(arr, string(str))
+			textResult.WriteRune(letter)
+			shielding = true
+		case unicode.IsDigit(runeText[0]) || (unicode.IsLetter(r) && shielding):
+			return "", ErrInvalidString
+		case unicode.IsDigit(r) && unicode.IsDigit(runeText[i-1]) && runeText[i-2] != backslash:
+			return "", ErrInvalidString
+		case shielding:
+			if i+1 == len(runeText) {
+				textResult.WriteRune(r)
+			}
+			shielding, letter, next = false, r, false
+		case unicode.IsDigit(r):
+			if r != '0' && !next {
+				textResult.WriteString(strings.Repeat(string(letter), int(r-'0')))
+			}
+			next = true
+		default:
+			if !next && letter != 0 {
+				textResult.WriteRune(letter)
+			}
+			if i+1 == len(runeText) {
+				textResult.WriteRune(r)
+			}
+			letter, next = r, false
 		}
 	}
 
-	var sb strings.Builder
-	for _, item := range arr {
-		sb.WriteString(item)
-	}
-
-	return sb.String(), nil
+	return textResult.String(), nil
 }
