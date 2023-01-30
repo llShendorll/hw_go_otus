@@ -11,36 +11,39 @@ type List struct {
 	count int
 }
 
-//var reg = regexp.MustCompile(`[\s]+-|[\s,."!]+`) // Раскомментировать
-
-var reg = regexp.MustCompile(`[\s]+`) // taskWithAsteriskIsCompleted = false (true - Закомментировать)
+var reg = regexp.MustCompile(`[\s]+-|[\s,."!:;?()'«»]+`)
 
 func Top10(text string) []string {
-	//text = strings.ToLower(text) // Раскомментировать taskWithAsteriskIsCompleted = true
-	res := reg.ReplaceAllString(text, string(' '))
-	words := strings.Fields(res)
-	sort.Strings(words)
-	cnt := 1
-	list := make([]List, 0, len(words))
-	for i, word := range words {
-		if i+1 < len(words) {
-			if word == words[i+1] {
-				cnt++
-			} else {
-				list = append(list, List{word, cnt})
-				cnt = 1
-			}
-		}
+	text = strings.ToLower(text)
+	replaceText := reg.ReplaceAllString(text, string(' '))
+	words := strings.Fields(replaceText)
+	mapWords := make(map[string]int)
+
+	for _, word := range words {
+		mapWords[word]++
 	}
 
-	sort.SliceStable(list, func(i int, j int) bool {
+	list := make([]List, 0, len(mapWords))
+	for w, c := range mapWords {
+		list = append(list, List{w, c})
+	}
+
+	sort.Slice(list, func(i int, j int) bool {
+		if list[i].count == list[j].count {
+			return list[i].word < list[j].word
+		}
 		return list[i].count > list[j].count
 	})
 
-	listSlice := make([]string, 0, 10)
+	lengthList := 10
+	if len(list) < 10 {
+		lengthList = len(list)
+	}
+
+	listSlice := make([]string, 0, lengthList)
 	for i, k := range list {
 		listSlice = append(listSlice, k.word)
-		if i == 9 || i > len(list) {
+		if i == 9 || i > lengthList {
 			break
 		}
 	}
