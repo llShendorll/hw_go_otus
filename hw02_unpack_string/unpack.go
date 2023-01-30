@@ -2,7 +2,6 @@ package hw02unpackstring
 
 import (
 	"errors"
-	"strconv"
 	"strings"
 	"unicode"
 )
@@ -11,37 +10,44 @@ var ErrInvalidString = errors.New("invalid string")
 
 func Unpack(text string) (string, error) {
 	var shielding bool
-	var repeatLetter rune
+	var next bool
+	var letter rune
+	var textResult strings.Builder
+	backslash := '\\'
 	runeText := []rune(text)
-	var sb strings.Builder
-	for i, str := range runeText {
+
+	for i, r := range runeText {
 		switch {
-		case string(str) == `\` && !shielding:
-			if i == len(runeText)-1 {
+		case r == backslash && !shielding:
+			if i == len(text)-1 {
 				return "", ErrInvalidString
 			}
+			textResult.WriteRune(letter)
 			shielding = true
-		case unicode.IsDigit(rune(text[0])) || (unicode.IsLetter(str) && shielding):
+		case unicode.IsDigit(runeText[0]) || (unicode.IsLetter(r) && shielding):
+			return "", ErrInvalidString
+		case unicode.IsDigit(r) && unicode.IsDigit(runeText[i-1]) && runeText[i-2] != backslash:
 			return "", ErrInvalidString
 		case shielding:
-			sb.WriteString(string(str))
-			repeatLetter = str
-			shielding = false
-		case unicode.IsDigit(str) && unicode.IsDigit(runeText[i-1]) && runeText[i-2] != '\\':
-			return "", ErrInvalidString
-		case unicode.IsDigit(str):
-			if atoi, err := strconv.Atoi(string(str)); err == nil {
-				if atoi > 0 {
-					sb.WriteString(strings.Repeat(string(repeatLetter), atoi-1))
-				}
+			if i+1 == len(runeText) {
+				textResult.WriteRune(r)
 			}
+			shielding, letter, next = false, r, false
+		case unicode.IsDigit(r):
+			if r != '0' && !next {
+				textResult.WriteString(strings.Repeat(string(letter), int(r-'0')))
+			}
+			next = true
 		default:
-			if (i+1 < len(runeText) && runeText[i+1] != '0') || len(runeText) == i+1 {
-				sb.WriteString(string(str))
-				repeatLetter = str
+			if !next && letter != 0 {
+				textResult.WriteRune(letter)
 			}
+			if i+1 == len(runeText) {
+				textResult.WriteRune(r)
+			}
+			letter, next = r, false
 		}
 	}
 
-	return sb.String(), nil
+	return textResult.String(), nil
 }
