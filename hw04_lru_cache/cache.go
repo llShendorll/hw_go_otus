@@ -20,10 +20,10 @@ type itemCache struct {
 }
 
 func (l *lruCache) Set(key Key, value interface{}) bool {
-	if elem, isOk := l.items[key]; isOk {
+	if elem, ok := l.items[key]; ok {
 		l.queue.MoveToFront(elem)
 		elem.Value.(*itemCache).value = value
-		return isOk
+		return ok
 	}
 
 	item := &itemCache{key: key, value: value}
@@ -39,15 +39,16 @@ func (l *lruCache) Set(key Key, value interface{}) bool {
 }
 
 func (l *lruCache) Get(key Key) (interface{}, bool) {
-	if elem, isOk := l.items[key]; isOk {
+	if elem, ok := l.items[key]; ok {
 		l.queue.MoveToFront(elem)
-		return elem.Value.(*itemCache).value, isOk
+		return elem.Value.(*itemCache).value, ok
 	}
 
 	return nil, false
 }
 
 func (l *lruCache) Clear() {
+	l.queue = NewList()
 	l.items = make(map[Key]*ListItem, l.capacity)
 }
 
