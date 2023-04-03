@@ -41,6 +41,9 @@ func Run(tasks []Task, n, m int) error {
 		go func() {
 			defer wg.Done()
 			for task := range ch {
+				if int(e.Get()) >= m {
+					return
+				}
 				if taskError := task(); taskError != nil {
 					e.Increment()
 				}
