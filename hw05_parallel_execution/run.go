@@ -28,27 +28,31 @@ func Run(tasks []Task, n, m int) error {
 		return ErrErrorsLimitExceeded
 	}
 	var wg sync.WaitGroup
-	ch := make(chan struct{}, n)
+	ch := make(chan Task, len(tasks))
 	e := &ErrorsCount{}
 
-	for i := 0; i < len(tasks); i++ {
+	for i := 0; i < n; i++ {
 		if e.Get() >= int32(m) {
 			break
 		}
 
 		wg.Add(1)
 
-		go func(t Task) {
+		go func() {
 			defer wg.Done()
-			if t() != nil {
-				e.Increment()
+			for task := range ch {
+				if taskError := task(); taskError != nil {
+					e.Increment()
+				}
 			}
-			<-ch
-		}(tasks[i])
-
-		ch <- struct{}{}
+		}()
 	}
 
+	for _, task := range tasks {
+		ch <- task
+	}
+
+	close(ch)
 	wg.Wait()
 
 	if e.Get() > 0 {
