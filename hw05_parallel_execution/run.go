@@ -32,10 +32,6 @@ func Run(tasks []Task, n, m int) error {
 	e := &ErrorsCount{}
 
 	for i := 0; i < n; i++ {
-		if e.Get() >= int32(m) {
-			break
-		}
-
 		wg.Add(1)
 
 		go func() {
