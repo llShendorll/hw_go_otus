@@ -28,7 +28,7 @@ func Run(tasks []Task, n, m int) error {
 		return ErrErrorsLimitExceeded
 	}
 	var wg sync.WaitGroup
-	ch := make(chan Task, len(tasks))
+	ch := make(chan Task)
 	e := &ErrorsCount{}
 
 	for i := 0; i < n; i++ {
@@ -37,10 +37,7 @@ func Run(tasks []Task, n, m int) error {
 		go func() {
 			defer wg.Done()
 			for task := range ch {
-				if int(e.Get()) >= m {
-					return
-				}
-				if taskError := task(); taskError != nil {
+				if err := task(); err != nil {
 					e.Increment()
 				}
 			}
@@ -49,6 +46,9 @@ func Run(tasks []Task, n, m int) error {
 
 	for _, task := range tasks {
 		ch <- task
+		if int(e.Get()) >= m {
+			break
+		}
 	}
 
 	close(ch)
