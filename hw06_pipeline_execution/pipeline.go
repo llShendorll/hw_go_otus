@@ -9,7 +9,7 @@ type (
 type Stage func(in In) (out Out)
 
 func ExecutePipeline(in In, done In, stages ...Stage) Out {
-	if in == nil {
+	if len(stages) == 0 {
 		return nil
 	}
 
